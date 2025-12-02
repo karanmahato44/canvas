@@ -10,13 +10,13 @@ root: root_sequence
 nodes:
   - id: root_sequence
     type: Sequence
-    name: Root Node
+    name: root nod v2
     children:
       - get_sentiment_nvda
       - get_sentiment_goog
   - id: get_sentiment_nvda
     type: Agent
-    name: Get NVDA sentiment
+    name: ' v2 test - Get NVDA sentiment'
     details:
       tool: financial-news-researcher
       parameters:
