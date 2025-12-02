@@ -12,6 +12,7 @@ root: business-evaluation-workflow
 nodes:
   - id: business-evaluation-workflow
     type: Sequence
+    name: pe v2
     children:
       - stage-1
       - stage-2
