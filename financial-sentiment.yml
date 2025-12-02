@@ -1,0 +1,32 @@
+apiVersion: datathreads.ai/v1
+kind: BehaviorTree
+metadata:
+  name: Financial Sentiment
+  description: Financial Sentiment
+  author: user@example.com
+  version: '1.0'
+  filename: financial-sentiment.yml
+root: root_sequence
+nodes:
+  - id: root_sequence
+    type: Sequence
+    name: Root Node
+    children:
+      - get_sentiment_nvda
+      - get_sentiment_goog
+  - id: get_sentiment_nvda
+    type: Agent
+    name: Get NVDA sentiment
+    details:
+      tool: financial-news-researcher
+      parameters:
+        query: NVDA
+      output: sentiment_nvda
+  - id: get_sentiment_goog
+    type: Agent
+    name: Get GOOGL sentiment
+    details:
+      tool: financial-news-researcher
+      parameters:
+        query: GOOG
+      output: sentiment_goog
