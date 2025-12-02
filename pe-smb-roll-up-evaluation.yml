@@ -1,0 +1,111 @@
+apiVersion: datathreads.ai/v1
+kind: BehaviorTree
+metadata:
+  name: Private Equity SMB Roll-up Evaluation
+  description: >-
+    A comprehensive reasoning plan to evaluate a small business for a PE roll-up
+    strategy, based on a 3-year hold period.
+  author: investment-analytics-team@pe-firm.com
+  version: '1.0'
+  filename: pe-smb-roll-up-evaluation.yml
+root: business-evaluation-workflow
+nodes:
+  - id: business-evaluation-workflow
+    type: Sequence
+    children:
+      - stage-1
+      - stage-2
+      - stage-3
+      - stage-4
+  - id: stage-1
+    type: Sequence
+    details:
+      tool: databricks-agent
+    children:
+      - ingest-documents
+      - classify-documents
+      - extract-financials
+      - extract-operational-data
+  - id: ingest-documents
+    type: Agent
+    details:
+      tool: google-sheets-agent
+      parameters:
+        source_path: '{{.document_source_path}}'
+  - id: classify-documents
+    type: Agent
+    details:
+      tool: databricks-agent
+      parameters:
+        documents: '{{.ingested_documents}}'
+  - id: extract-financials
+    type: Agent
+    details:
+      tool: google-sheets-agent
+      parameters:
+        financial_documents: '{{.classified_documents.financials}}'
+  - id: extract-operational-data
+    type: Agent
+    details:
+      tool: get_stock_sentiment
+      parameters:
+        operational_documents: '{{.classified_documents.contracts_and_ops}}'
+  - id: stage-2
+    type: Condition
+    details:
+      tool: get_stock_sentiment
+      parameters:
+        extracted_financials: '{{.extracted_financials}}'
+      assertion:
+        field: consistency_score
+        operator: greater_than_or_equal_to
+        value: 0.95
+  - id: stage-3
+    type: Sequence
+    children:
+      - calculate-kpis
+      - generate-valuation
+      - identify-risks
+  - id: calculate-kpis
+    type: Agent
+    details:
+      tool: databricks-agent
+      parameters:
+        financial_data: '{{.extracted_financials}}'
+        operational_data: '{{.extracted_operational_data}}'
+  - id: generate-valuation
+    type: Agent
+    details:
+      tool: get_stock_sentiment
+      parameters:
+        financial_data: '{{.extracted_financials}}'
+        industry_multiples: '{{.context.industry_multiples}}'
+  - id: identify-risks
+    type: Agent
+    details:
+      tool: google-sheets-agent
+      parameters:
+        operational_data: '{{.extracted_operational_data}}'
+        investment_context: '{{.user_context}}'
+  - id: stage-4
+    type: Sequence
+    children:
+      - synthesize-summary
+      - format-report
+  - id: synthesize-summary
+    type: Agent
+    details:
+      tool: get_stock_sentiment
+      parameters:
+        kpis: '{{.calculated_kpis}}'
+        valuation_model: '{{.generated_valuation_model}}'
+        risks_and_synergies: '{{.identified_risks_and_synergies}}'
+        investment_thesis: PE roll-up...
+  - id: format-report
+    type: Agent
+    details:
+      tool: get_stock_sentiment
+      parameters:
+        valuation_output: '{{.generated_valuation_model}}'
+        kpi_summary: '{{.calculated_kpis}}'
+        investment_summary: '{{.final_investment_summary}}'
